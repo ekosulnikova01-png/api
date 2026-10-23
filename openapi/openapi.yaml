@@ -1,0 +1,161 @@
+openapi: 3.0.3
+info:
+  title: API Пункта Выдачи Заказов (ПВЗ)
+  description: API для управления посылками и их выдачей в пункте выдачи.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер для тестирования
+
+paths:
+  /health:
+    get:
+      summary: Проверка работоспособности сервиса
+      responses:
+        "200":
+          description: Сервис работает
+          content:
+            application/json:
+              example:
+                status: "ok"
+
+  /api/v1/cells:
+    post:
+      summary: Создать новую ячейку хранения
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              cell_number: "A-12"
+              size: "medium"
+      responses:
+        "201":
+          description: Ячейка успешно создана
+          content:
+            application/json:
+              example:
+                cell_id: "cell-123"
+                cell_number: "A-12"
+                status: "available"
+        "422":
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: "validation_error"
+                  message: "Поле cell_number обязательно"
+                  request_id: "req-777"
+
+  /api/v1/orders/{order_id}/arrive:
+    post:
+      summary: Принять посылку на склад ПВЗ
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Посылка успешно принята
+          content:
+            application/json:
+              example:
+                order_id: "order-123"
+                status: "arrived"
+                cell_id: "cell-123"
+        "409":
+          description: Посылка уже находится в ПВЗ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: "conflict"
+                  message: "Посылка уже в ПВЗ"
+                  request_id: "req-888"
+
+  /api/v1/orders:
+    get:
+      summary: Получить список своих посылок (постранично)
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Список посылок успешно получен
+          content:
+            application/json:
+              example:
+                orders:
+                  - order_id: "order-123"
+                    status: "arrived"
+                  - order_id: "order-124"
+                    status: "in_transit"
+        "401":
+          description: Неавторизованный доступ (чужой ключ)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: "unauthorized"
+                  message: "Неверный токен клиента"
+                  request_id: "req-999"
+
+  /api/v1/orders/{order_id}/issue:
+    post:
+      summary: Выдать заказ клиенту
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Заказ успешно выдан. Повторный вызов с тем же ключом вернет этот же результат.
+          content:
+            application/json:
+              example:
+                order_id: "order-123"
+                status: "issued"
+        "409":
+          description: Заказ нельзя выдать (например, уже выдан или еще не прибыл)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: "conflict"
+                  message: "Заказ уже выдан"
+                  request_id: "req-111"
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            request_id:
+              type: string
