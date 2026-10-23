@@ -22,7 +22,7 @@ paths:
 
   /api/v1/cells:
     post:
-      summary: Создать новую ячейку хранения
+      summary: Создать новую ячейку 
       requestBody:
         required: true
         content:
@@ -82,7 +82,7 @@ paths:
 
   /api/v1/orders:
     get:
-      summary: Получить список своих посылок (постранично)
+      summary: Получить список своих посылок 
       parameters:
         - name: limit
           in: query
@@ -102,7 +102,7 @@ paths:
                   - order_id: "order-124"
                     status: "in_transit"
         "401":
-          description: Неавторизованный доступ (чужой ключ)
+          description: Неавторизованный доступ 
           content:
             application/json:
               schema:
@@ -134,7 +134,7 @@ paths:
                 order_id: "order-123"
                 status: "issued"
         "409":
-          description: Заказ нельзя выдать (например, уже выдан или еще не прибыл)
+          description: Заказ нельзя выдать
           content:
             application/json:
               schema:
