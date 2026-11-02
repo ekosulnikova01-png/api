@@ -1,0 +1,62 @@
+{
+  "info": {
+    "name": "PVZ API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "2. Create Cell",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\"cell_number\": \"B-01\", \"size\": \"large\"}"},
+        "url": "{{baseUrl}}/api/v1/cells"
+      }
+    },
+    {
+      "name": "3. Broken Body",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\"size\": \"large\"}"},
+        "url": "{{baseUrl}}/api/v1/cells"
+      }
+    },
+    {
+      "name": "4. Idempotency",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Idempotency-Key", "value": "test-key-1"}],
+        "url": "{{baseUrl}}/api/v1/orders/timor/issue"
+      }
+    },
+    {
+      "name": "5. Conflict (Prefer)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Prefer", "value": "code=409"}],
+        "url": "{{baseUrl}}/api/v1/orders/timor/issue"
+      }
+    },
+    {
+      "name": "6. List Orders",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/orders"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:4010"
+    }
+  ]
+}
